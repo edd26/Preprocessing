@@ -20,22 +20,22 @@ for ind = 13:numel(subjDir)
         tline = fgetl(fID);
     end
     fclose(fID);
-    
+
     for i = 1:nregion
         fpart = split(regName{i},'/');
         fpart2 = split(fpart{10},'.');
-        
+
         tc(i,:) = load(sprintf('%s%s/rsfMRI/B_ExtractedTCs/%s.nii.txt',pn.subj,subjDir(ind).name,fpart2{1}));
     end
-    
+
     for i = 1:nregion
         for j = 1:nregion
             c = corrcoef(tc(i,:),tc(j,:));
             fc(i,j) = c(2);
         end
     end
-    
+
     save(sprintf('%s%s/rsfMRI/B_ExtractedTCs/FC.mat',pn.subj,subjDir(ind).name),'fc')
     save(sprintf('%s%s/rsfMRI/B_ExtractedTCs/TC.mat',pn.subj,subjDir(ind).name),'tc')
-        
+
 end
