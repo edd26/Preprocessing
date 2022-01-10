@@ -8,16 +8,16 @@ function rp {
         dirname=$1
         result=${dirname%%+(/)}    # trim however many trailing slashes exist
         result=${result##*/}
-        result=$(echo $result | sed 's:/*$::')        
+        result=$(echo $result | sed 's:/*$::')
 
         \cp rsfMRI.fsf $result\_design.fsf
         or='../../B_Data/C_FSLPreproc/subj/'
 	#string to replace
-        rp=$1 
-        echo "Processing subject: $1 . " 
+        rp=$1
+        echo "Processing subject: $1 . "
         sed -i "s~$or~$rp/~" $result\_design.fsf
         feat $result\_design.fsf
-        echo "rsfMRI preprocessing for $1 finished. "  
+        echo "rsfMRI preprocessing for $1 finished. "
         #rm $1/rsfMRI/A_PreprocOutput
     fi
 
