@@ -6,7 +6,11 @@
 # AAL2 atlas) and then the average voxel intensity is computed for the masked
 # brain
 
-# ===-
+# TODO:
+# - add project home dir as an input
+
+
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Handle input arguments
 NAME_TEMPLATE=$1
 # eg. NAME_TEMPLATE="_FEAT_2022-01-05"
@@ -21,7 +25,7 @@ TOTAL_SUBEJCTS=$3
 REFERENCE_ATLAS=standard
 MASKS_FOLDER="./AAl2_masks"
 
-# ===-
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Create reference atlas check
 if [[ -e $REFERENCE_ATLAS ]]; then
     echo "Refernce atlas is correct."
@@ -35,7 +39,7 @@ fi
 # Create reference template file
 fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard
 
-# ===-
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Source file check
 echo
 echo "===-===-===-"
@@ -51,7 +55,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     fi
 done
 
-# ===-
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Set up export folder
 echo
 echo "===-===-===-"
@@ -68,7 +72,7 @@ else
     mkdir $TIME_SERIES_FOLDER
 fi
 
-# ===-
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Run the analysis
 
 echo
@@ -92,19 +96,19 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     fi
 
     # Set up paths for filtr
-    FUNC_STD_OUT=$OUT_FOLDER/$(echo $SUBJECT | sed 's:\.feat:\_functional_in_std:g')
-    FUNC_STD_OUT_FILE=$FUNC_STD_OUT".nii.gz"
+    FUNC_TO_STD_OUTPUT=$OUT_FOLDER/$(echo $SUBJECT | sed 's:\.feat:\_functional_in_std:g')
+    FUNC_TO_STD_OUTPUT_FILE=$FUNC_TO_STD_OUTPUT".nii.gz"
     TRASNSFORMATION_MATRIX=$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
 
-    if [[ -e $FUNC_STD_OUT_FILE ]]; then
-        echo $FUNC_STD_OUT " exists."
+    if [[ -e $FUNC_TO_STD_OUTPUT_FILE ]]; then
+        echo $FUNC_TO_STD_OUTPUT " exists."
     else
-        echo $FUNC_STD_OUT " does not exists"
+        echo $FUNC_TO_STD_OUTPUT " does not exists"
         echo "Running flirt..."
-        flirt -ref $REFERENCE_ATLAS -in $SRC_FUNC_DATA -out $FUNC_STD_OUT -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
+        flirt -ref $REFERENCE_ATLAS -in $SRC_FUNC_DATA -out $FUNC_TO_STD_OUTPUT -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
     fi
 
-    # Part 2- getting signals with masks
+    # Part 2- extract signal from masked areas
     if [[ -e $OUT_FOLDER/"signals" ]]; then
         echo $OUT_FOLDER/"signals" " exists."
     else
@@ -126,7 +130,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         if [[ -e $OUTPUT_TEXT_FILE ]]; then
             echo $OUTPUT_TEXT_FILE  " exists."
         else
-            fslmeants -i $FUNC_STD_OUT -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
+            fslmeants -i $FUNC_TO_STD_OUTPUT -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
         fi
     done
     echo "===-===-"
@@ -134,7 +138,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
 done
 echo "===-===-===-===-"
 
-# ===-
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Remove reference template file
 rm standard
 
