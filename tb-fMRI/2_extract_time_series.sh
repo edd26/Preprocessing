@@ -87,7 +87,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     echo $SRC_FUNC_DATA
     echo
 
-    OUT_FOLDER=$(echo $SUBJECT | sed 's:\.feat:\_results:g')
+    OUT_FOLDER=$(echo $SUBJECT | sed 's:\.feat:\_mask_signal_export:g')
     if [[ -e $OUT_FOLDER ]]; then
         echo "Output folder exists: " $OUT_FOLDER
     else
