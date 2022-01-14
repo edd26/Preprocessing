@@ -8,6 +8,7 @@
 
 # TODO:
 # - add project home dir as an input
+# - remove creation of unused file
 
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -20,24 +21,33 @@ DATA_PATH=$2
 
 TOTAL_SUBEJCTS=$3
 
-# ===-
-# Global variables set up
-REFERENCE_ATLAS=standard
-MASKS_FOLDER="./AAl2_masks"
+PROC_EXT=$4
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+# Report pwd
+echo "pwd: " `pwd`
+
+# ===-
+# Global variables set up
+MASKS_FOLDER="./AAl2_masks"
+echo "Masks folder: " $MASKS_FOLDER
+
+
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+# ===-
+# Create reference template file
+REFERENCE_ATLAS=standard
+echo `fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard`
+
+# ===-
 # Create reference atlas check
-if [[ -e $REFERENCE_ATLAS ]]; then
+if [[ -e $REFERENCE_ATLAS".nii.gz" ]]; then
     echo "Refernce atlas is correct."
 else
     echo "Reference atlas is missing!"
-    echo "Make sure that there exists ./AAl2_masks at the location where script is run!"
-    return
+    # echo "Make sure that there exists ./AAl2_masks at the location where script is run!"
+    exit
 fi
-
-# ===-
-# Create reference template file
-fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Source file check
@@ -45,7 +55,7 @@ echo
 echo "===-===-===-"
 echo "Check if source file exists:"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
-    FILE_NAME="$i$NAME_TEMPLATE.feat";
+    FILE_NAME="$i$NAME_TEMPLATE.$PROC_EXT";
 
     SRC_FILE=./$DATA_PATH/$FILE_NAME/"filtered_func_data.nii.gz"
     if [[ -e $SRC_FILE ]]; then
@@ -80,23 +90,25 @@ echo "===-===-===-"
 echo "Running main analysis"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     # Part 1- running filtr
-    SUBJECT="$i$NAME_TEMPLATE.feat";
+    SUBJECT="$i$NAME_TEMPLATE.$PROC_EXT";
     SRC_FUNC_DATA=./$DATA_PATH/$SUBJECT/"filtered_func_data.nii.gz"
 
     echo "Processing subject at:"
     echo $SRC_FUNC_DATA
     echo
 
-    OUT_FOLDER=$(echo $SUBJECT | sed 's:\.feat:\_mask_signal_export:g')
+    # TODO this sed is not working correctly
+    # OUT_FOLDER=./$TIME_SERIES_FOLDER/$(echo $SUBJECT | sed 's:\.$PROC_EXT:\_mask_signal_export:g')
+    OUT_FOLDER=$TIME_SERIES_FOLDER/$i
     if [[ -e $OUT_FOLDER ]]; then
         echo "Output folder exists: " $OUT_FOLDER
     else
-        echo "Creating outpu folder: " $OUT_FOLDER
+        echo "Creating output folder: " $OUT_FOLDER
         mkdir $OUT_FOLDER
     fi
 
     # Set up paths for filtr
-    FUNC_TO_STD_OUTPUT=$OUT_FOLDER/$(echo $SUBJECT | sed 's:\.feat:\_functional_in_std:g')
+    FUNC_TO_STD_OUTPUT=$OUT_FOLDER/$(echo $SUBJECT | sed 's:\.$PROC_EXT:\_functional_in_std:g')
     FUNC_TO_STD_OUTPUT_FILE=$FUNC_TO_STD_OUTPUT".nii.gz"
     TRASNSFORMATION_MATRIX=$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
 
