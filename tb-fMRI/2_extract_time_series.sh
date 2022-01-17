@@ -25,9 +25,21 @@ PROC_EXT=$4
 
 FMRI_FILE_NAME=$5
 
-if [ FMRI_FILE_NAME == "" ]; then
+if [ -z "$FMRI_FILE_NAME" ]; then
     echo "Using default FMRI file_name."
     FMRI_FILE_NAME="filtered_func_data"
+fi
+
+MATRIX_PATH=$6
+if [ -z "$MATRIX_PATH" ]; then
+    echo "Using default MATRIX_PATH."
+    FMRI_FILE_NAME=$DATA_PATH
+fi
+
+MATRIX_TEMPLATE=$7
+if [ -z "$MATRIX_TEMPLATE" ]; then
+    echo "Using default MATRIX_TEMPLATE."
+    FMRI_FILE_NAME=$NAME_TEMPLATE
 fi
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -111,7 +123,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     echo "SUBJECT:" $SUBJECT
 
     echo "Processing subject at:"
-    echo $SRC_FUNC_DATA
+    echo $SRC_FILE
     echo
 
     # TODO this sed is not working correctly
@@ -132,14 +144,16 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     fi
 
     FUNC_TO_STD_OUTPUT_FILE=$FUNC_TO_STD_OUTPUT".nii.gz"
-    TRASNSFORMATION_MATRIX=$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
+    FINAL_MATRIX=$i$MATRIX_TEMPLATE
+    TRASNSFORMATION_MATRIX=$MATRIX_PATH/$FINAL_MATRIX/"reg/example_func2standard.mat"
 
     if [[ -e $FUNC_TO_STD_OUTPUT_FILE ]]; then
         echo $FUNC_TO_STD_OUTPUT " exists."
     else
         echo $FUNC_TO_STD_OUTPUT " does not exists"
         echo "Running flirt..."
-        flirt -ref $REFERENCE_ATLAS -in $SRC_FUNC_DATA -out $FUNC_TO_STD_OUTPUT -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
+
+        flirt -ref $REFERENCE_ATLAS -in $SRC_FILE -out $FUNC_TO_STD_OUTPUT -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
     fi
 
 
