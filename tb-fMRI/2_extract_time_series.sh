@@ -9,6 +9,7 @@
 # TODO:
 # - add project home dir as an input
 # - remove creation of unused file
+# - parallelize computations
 
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -158,7 +159,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
 
 
     # Part 2- extract signal from masked areas, continue only if flirt suceeded
-    if [ "$?" -ne 0 ]; then # if command suceded
+    # if [ "$?" -ne 0 ]; then # if command suceded
         if [[ -e $OUT_FOLDER/"signals" ]]; then
             echo $OUT_FOLDER/"signals" " exists."
         else
@@ -185,9 +186,9 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         done
         echo "===-===-"
         echo
-    else
-        echo "Part 2 not executed, flirt failed to suceed"
-    fi # if command suceded
+    # else
+    #     echo "Part 2 not executed, flirt failed to suceed"
+    # fi # if command suceded
 done
 echo "===-===-===-===-"
 
