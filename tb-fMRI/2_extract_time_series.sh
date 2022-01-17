@@ -23,6 +23,13 @@ TOTAL_SUBEJCTS=$3
 
 PROC_EXT=$4
 
+FMRI_FILE_NAME=$5
+
+if [ FMRI_FILE_NAME == "" ]; then
+    echo "Using default FMRI file_name."
+    FMRI_FILE_NAME="filtered_func_data"
+fi
+
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Report pwd
 echo "pwd: " `pwd`
@@ -55,9 +62,13 @@ echo
 echo "===-===-===-"
 echo "Check if source file exists:"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
-    FILE_NAME="$i$NAME_TEMPLATE.$PROC_EXT";
+    if [ $PROC_EXT == "-" ]; then
+        SUBJECT="$i$NAME_TEMPLATE";
+    else
+        SUBJECT="$i$NAME_TEMPLATE.$PROC_EXT";
+    fi
 
-    SRC_FILE=./$DATA_PATH/$FILE_NAME/"filtered_func_data.nii.gz"
+    SRC_FILE=./$DATA_PATH/$SUBJECT/$FMRI_FILE_NAME".nii.gz"
     if [[ -e $SRC_FILE ]]; then
         echo "$SRC_FILE exists"
     else
@@ -90,8 +101,14 @@ echo "===-===-===-"
 echo "Running main analysis"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     # Part 1- running filtr
-    SUBJECT="$i$NAME_TEMPLATE.$PROC_EXT";
-    SRC_FUNC_DATA=./$DATA_PATH/$SUBJECT/"filtered_func_data.nii.gz"
+    if [ $PROC_EXT == "-" ]; then
+        SUBJECT="$i$NAME_TEMPLATE";
+    else
+        SUBJECT="$i$NAME_TEMPLATE.$PROC_EXT";
+    fi
+    SRC_FILE=./$DATA_PATH/$SUBJECT/$FMRI_FILE_NAME".nii.gz"
+
+    echo "SUBJECT:" $SUBJECT
 
     echo "Processing subject at:"
     echo $SRC_FUNC_DATA
@@ -108,7 +125,12 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     fi
 
     # Set up paths for filtr
-    FUNC_TO_STD_OUTPUT=$OUT_FOLDER/$(echo $SUBJECT | sed 's:\.$PROC_EXT:\_functional_in_std:g')
+    if [ $PROC_EXT == "-" ]; then
+        FUNC_TO_STD_OUTPUT=$OUT_FOLDER/$SUBJECT"_functional_in_std"
+    else
+        FUNC_TO_STD_OUTPUT=$OUT_FOLDER/$(echo $SUBJECT | sed 's:\.$PROC_EXT:\_functional_in_std:g')
+    fi
+
     FUNC_TO_STD_OUTPUT_FILE=$FUNC_TO_STD_OUTPUT".nii.gz"
     TRASNSFORMATION_MATRIX=$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
 
@@ -120,33 +142,38 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         flirt -ref $REFERENCE_ATLAS -in $SRC_FUNC_DATA -out $FUNC_TO_STD_OUTPUT -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
     fi
 
-    # Part 2- extract signal from masked areas
-    if [[ -e $OUT_FOLDER/"signals" ]]; then
-        echo $OUT_FOLDER/"signals" " exists."
-    else
-        echo "Folder does not exist."
-        echo "Creating: " $OUT_FOLDER/"signals"
-        mkdir $OUT_FOLDER/"signals"
-    fi
 
-    echo ""
-    echo "===-===-"
-    echo "Running signal export:"
-    for MASK_FILE in $(ls $MASKS_FOLDER); do
-        echo ""
-        echo "===-"
-        echo "Processing mask:" $MASK_FILE
-
-        OUTPUT_TEXT_FILE=${OUT_FOLDER}/"signals"/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
-
-        if [[ -e $OUTPUT_TEXT_FILE ]]; then
-            echo $OUTPUT_TEXT_FILE  " exists."
+    # Part 2- extract signal from masked areas, continue only if flirt suceeded
+    if [ "$?" -ne 0 ]; then # if command suceded
+        if [[ -e $OUT_FOLDER/"signals" ]]; then
+            echo $OUT_FOLDER/"signals" " exists."
         else
-            fslmeants -i $FUNC_TO_STD_OUTPUT -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
+            echo "Folder does not exist."
+            echo "Creating: " $OUT_FOLDER/"signals"
+            mkdir $OUT_FOLDER/"signals"
         fi
-    done
-    echo "===-===-"
-    echo
+
+        echo ""
+        echo "===-===-"
+        echo "Running signal export:"
+        for MASK_FILE in $(ls $MASKS_FOLDER); do
+            echo ""
+            echo "===-"
+            echo "Processing mask:" $MASK_FILE
+
+            OUTPUT_TEXT_FILE=${OUT_FOLDER}/"signals"/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
+
+            if [[ -e $OUTPUT_TEXT_FILE ]]; then
+                echo $OUTPUT_TEXT_FILE  " exists."
+            else
+                fslmeants -i $FUNC_TO_STD_OUTPUT -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
+            fi
+        done
+        echo "===-===-"
+        echo
+    else
+        echo "Part 2 not executed, flirt failed to suceed"
+    fi # if command suceded
 done
 echo "===-===-===-===-"
 
