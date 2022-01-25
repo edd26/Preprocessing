@@ -4,11 +4,22 @@
 # Scripts transforms fMRI data into the MNI space; then, transformed data is
 # masked with a collection of masks (each corresponds to a brain region from
 # AAL2 atlas) and then the average voxel intensity is computed for the masked
-# brain
+# brain. It is assumed that the FEAT output folder have the following files
+# in its structure:
+# - "ICA_AROMA/denoised_func_data_nonaggr"
+# - "reg/example_func2standard.mat"
+#
+# Input arguments:
+# - NAME_TEMPLATE: FEAT folder name; it will be prefixed with a number
+# - DATA_PATH: location of the FEAT folder
+# - TOTAL_SUBEJCTS: total number of subjects for which the analysis will be run;
+#
+# The output of the script is:
+# - "filtered_func_in_MNI.nii.gz"
+
 
 # TODO:
 # - add project home dir as an input
-# - remove creation of unused file
 # - parallelize computations
 
 
@@ -34,24 +45,20 @@ echo "Masks folder: " $MASKS_FOLDER
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # ===-
 # Create reference template file
-REFERENCE_ATLAS="/usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard"
+# REFERENCE_ATLAS="/usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard"
+REFERENCE_ATLAS=standard
+echo `fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard`
 
-# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-# Set up export folder
-echo
-echo "===-===-===-"
-echo "Setting up export folder"
-TIME_SERIES_FOLDER="."/$DATA_PATH/"time_series_export"
-echo "at "$TIME_SERIES_FOLDER
-
-if [[ -e $TIME_SERIES_FOLDER ]]; then
-    echo "Folder exists."
-    ls $TIME_SERIES_FOLDER
+# ===-
+# Create reference atlas check
+if [[ -e $REFERENCE_ATLAS".nii.gz" ]]; then
+    echo "Refernce atlas is correct."
 else
-    echo "Folder does not exist!"
-    echo "Creating."
-    mkdir $TIME_SERIES_FOLDER
+    echo "Reference atlas is missing!"
+    # echo "Make sure that there exists ./AAl2_masks at the location where script is run!"
+    exit
 fi
+
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Run the analysis
@@ -62,23 +69,43 @@ echo "Running main analysis"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     # Part 1- running filtr
     SUBJECT="$i$NAME_TEMPLATE";
+    TIME_SERIES_FOLDER=./$DATA_PATH/$SUBJECT/"time_series_export"
+    SRC_FILE=./$DATA_PATH/$SUBJECT/"ICA_AROMA/denoised_func_data_nonaggr"
+    TRASNSFORMATION_MATRIX=./$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
+    OUT_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI.nii.gz"
+
     echo "SUBJECT:" $SUBJECT
 
-    SRC_FILE=./$DATA_PATH/$SUBJECT/"ICA_AROMA/denoised_func_data_nonaggr.nii.gz"
+    # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+    # Set up export folder
+    echo
+    echo "===-===-===-"
+    echo "Setting up export folder"
+    echo "at "$TIME_SERIES_FOLDER
+
+
+    if [[ -e $TIME_SERIES_FOLDER ]]; then
+        echo "Folder exists."
+        ls $TIME_SERIES_FOLDER
+    else
+        echo "Folder does not exist!"
+        echo "Creating."
+        mkdir $TIME_SERIES_FOLDER
+    fi
 
     echo "Processing subject at:"
     echo $SRC_FILE
     echo
 
-    OUT_FOLDER=$TIME_SERIES_FOLDER/$i
 
-    TRASNSFORMATION_MATRIX=./$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
+    if [[ -e $OUT_FILE ]]; then
+        echo $OUT_FILE " exists."
+    else
+        echo $OUT_FILE " does not exists"
+        echo "Running flirt..."
 
-    echo "Running flirt..."
-
-    # flirt -ref $REFERENCE_ATLAS -in $SRC_FILE -out $FUNC_TO_STD_OUTPUT -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
-    OUT_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI.nii.gz"
-    flirt -ref $REFERENCE_ATLAS -in $SRC_FILE -out $OUT_FILE -applyxfm -init $TRASNSFORMATION_MATRIX -interp trilinear
+        flirt -ref ${REFERENCE_ATLAS} -in ${SRC_FILE} -out ${OUT_FILE} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
+    fi
 
     # Part 2- extract signal from masked areas, continue only if flirt suceeded
     echo ""
@@ -89,12 +116,12 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         echo "===-"
         echo "Processing mask:" $MASK_FILE
 
-        OUTPUT_TEXT_FILE=${OUT_FOLDER}/"signals"/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
+        OUTPUT_TEXT_FILE=$TIME_SERIES_FOLDER/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
 
         if [[ -e $OUTPUT_TEXT_FILE ]]; then
             echo $OUTPUT_TEXT_FILE  " exists."
         else
-            fslmeants -i $FUNC_TO_STD_OUTPUT -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
+            fslmeants -i $OUT_FILE -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
         fi
     done
     echo "===-===-"
@@ -103,9 +130,6 @@ done
 echo "===-===-===-===-"
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-# Remove reference template file
-rm standard
-
 # ===-
 echo "Finished processing subjects."
 echo "Please inspect results."
