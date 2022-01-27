@@ -15,7 +15,7 @@
 # - TOTAL_SUBEJCTS: total number of subjects for which the analysis will be run;
 #
 # The output of the script is:
-# - "filtered_func_in_MNI.nii.gz"
+# - "processed.nii.gz"
 
 
 # TODO:
@@ -72,7 +72,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     TIME_SERIES_FOLDER=./$DATA_PATH/$SUBJECT/"time_series_export"
     SRC_FILE=./$DATA_PATH/$SUBJECT/"ICA_AROMA/denoised_func_data_nonaggr"
     TRASNSFORMATION_MATRIX=./$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
-    OUT_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI.nii.gz"
+    OUT_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI_masked.nii.gz"
 
     echo "SUBJECT:" $SUBJECT
 
