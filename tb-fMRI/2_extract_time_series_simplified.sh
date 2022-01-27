@@ -52,13 +52,15 @@ echo "Masks folder: " $MASKS_FOLDER
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # ===-
 # Create reference template file
-# REFERENCE_ATLAS="/usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard"
-REFERENCE_ATLAS=standard
+MNI_BRAIN_TEMPLATE=standard
 echo `fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard`
+
+MNI_BRAIN_MASK=standard_mask
+echo `fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask standard_mask`
 
 # ===-
 # Create reference atlas check
-if [[ -e $REFERENCE_ATLAS".nii.gz" ]]; then
+if [[ -e $MNI_BRAIN_TEMPLATE".nii.gz" ]]; then
     echo "Refernce atlas is correct."
 else
     echo "Reference atlas is missing!"
@@ -74,12 +76,14 @@ echo
 echo "===-===-===-"
 echo "Running main analysis"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
+# - FEAT smoothed data ->
     # Part 1- running filtr
     SUBJECT="$i$NAME_TEMPLATE";
     TIME_SERIES_FOLDER=./$DATA_PATH/$SUBJECT/"time_series_export"
     SRC_FILE=./$DATA_PATH/$SUBJECT/"ICA_AROMA/denoised_func_data_nonaggr"
     TRASNSFORMATION_MATRIX=./$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
-    OUT_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI_masked.nii.gz"
+    BOLD_IN_MNI=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI.nii.gz"
+    MASKED_BRAIN_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI_masked.nii.gz"
 
     echo "SUBJECT:" $SUBJECT
 
@@ -105,30 +109,40 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     echo
 
 
-    if [[ -e $OUT_FILE ]]; then
-        echo $OUT_FILE " exists."
+    # Part 1 - transform into the MNI space
+    if [[ -e $BOLD_IN_MNI ]]; then
+        echo $BOLD_IN_MNI " exists."
     else
-        echo $OUT_FILE " does not exists"
+        # echo $BOLD_IN_MNI " does not exists"
         echo "Running flirt..."
 
-        flirt -ref ${REFERENCE_ATLAS} -in ${SRC_FILE} -out ${OUT_FILE} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
+        flirt -ref ${MNI_BRAIN_TEMPLATE} -in ${SRC_FILE} -out ${BOLD_IN_MNI} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
     fi
 
-    # Part 2- extract signal from masked areas, continue only if flirt suceeded
+    # Part 2- apply MNI brain mask
+    if [[ -e $MASKED_BRAIN_FILE ]]; then
+        echo $MASKED_BRAIN_FILE  " exists."
+    else
+        # echo $BOLD_IN_MNI " does not exists"
+        echo "Running masking..."
+        fslmaths ${BOLD_IN_MNI} ${MNI_BRAIN_MASK} ${MASKED_BRAIN_FILE}
+    fi
+
+    # Part 3- extract regions signal based on AAL2 atlas brain parcellation
     echo ""
     echo "===-===-"
     echo "Running signal export:"
     for MASK_FILE in $(ls $MASKS_FOLDER); do
+        OUTPUT_TEXT_FILE=$TIME_SERIES_FOLDER/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
+
         echo ""
         echo "===-"
         echo "Processing mask:" $MASK_FILE
 
-        OUTPUT_TEXT_FILE=$TIME_SERIES_FOLDER/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
-
         if [[ -e $OUTPUT_TEXT_FILE ]]; then
             echo $OUTPUT_TEXT_FILE  " exists."
         else
-            fslmeants -i $OUT_FILE -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
+            fslmeants -i $MASKED_BRAIN_FILE-o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
         fi
     done
     echo "===-===-"
