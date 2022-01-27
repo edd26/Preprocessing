@@ -1,11 +1,16 @@
 #!/bin/bash
 
 # DESCRIPTION:
-# Scripts transforms fMRI data into the MNI space; then, transformed data is
-# masked with a collection of masks (each corresponds to a brain region from
-# AAL2 atlas) and then the average voxel intensity is computed for the masked
-# brain. It is assumed that the FEAT output folder have the following files
-# in its structure:
+# Scripts transforms FEAT processed BOLD fMRI data with the following steps:
+# - FEAT smoothed data ->
+# - transform into the MNI space ->
+# - apply MNI brain mask ->
+# - extract regions signal based on AAL2 atlas brain parcellation
+#
+# Last step is done by masking the brain with a collection of masks (each
+# corresponds to a brain region from AAL2 atlas) and then computing average
+# voxel intensity for the masked brain. It is assumed that the FEAT output
+# folder have the following files in its structure:
 # - "ICA_AROMA/denoised_func_data_nonaggr"
 # - "reg/example_func2standard.mat"
 #
@@ -21,6 +26,8 @@
 # TODO:
 # - add project home dir as an input
 # - parallelize computations
+# - this should be split into functions, with base being a function doing the steps
+#    and iteration should be done as a wrapper
 
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
