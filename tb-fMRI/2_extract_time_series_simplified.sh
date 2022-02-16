@@ -1,8 +1,11 @@
 #!/bin/bash
 
+set -e
+
 # DESCRIPTION:
 # Scripts transforms FEAT processed BOLD fMRI data with the following steps:
 # - FEAT smoothed data ->
+# - AROMA denoising ->
 # - transform into the MNI space ->
 # - apply MNI brain mask ->
 # - extract regions signal based on AAL2 atlas brain parcellation
@@ -40,9 +43,13 @@ DATA_PATH=$2
 
 TOTAL_SUBEJCTS=$3
 
+AROMA_SCRIPT=$4
+
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Report pwd
 echo "pwd: " `pwd`
+
+PYTHON_PATH="/home/ed19aaf/.pyenv/versions/ica-aroma/bin"
 
 # ===-
 # Global variables set up
@@ -52,11 +59,10 @@ echo "Masks folder: " $MASKS_FOLDER
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # ===-
 # Create reference template file
-MNI_BRAIN_TEMPLATE=standard
 echo `fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain standard`
+MNI_BRAIN_TEMPLATE=standard
 
-MNI_BRAIN_MASK=standard_mask
-echo `fslmaths /usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask standard_mask`
+MNI_BRAIN_MASK=/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask
 
 # ===-
 # Create reference atlas check
@@ -76,14 +82,17 @@ echo
 echo "===-===-===-"
 echo "Running main analysis"
 for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
-# - FEAT smoothed data ->
-    # Part 1- running filtr
+    PWD_FOLDER=`pwd`
+
     SUBJECT="$i$NAME_TEMPLATE";
-    TIME_SERIES_FOLDER=./$DATA_PATH/$SUBJECT/"time_series_export"
-    SRC_FILE=./$DATA_PATH/$SUBJECT/"ICA_AROMA/denoised_func_data_nonaggr"
-    TRASNSFORMATION_MATRIX=./$DATA_PATH/$SUBJECT/"reg/example_func2standard.mat"
-    BOLD_IN_MNI=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI.nii.gz"
-    MASKED_BRAIN_FILE=./$DATA_PATH/$SUBJECT/"filtered_func_in_MNI_masked.nii.gz"
+    FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT
+
+    AROMA_OUT=$FEAT_FOLDER/"ICA_AROMA"
+    SRC_FILE=$FEAT_FOLDER/"ICA_AROMA/denoised_func_data_nonaggr"
+    TIME_SERIES_FOLDER=$FEAT_FOLDER/"time_series_export"
+    TRASNSFORMATION_MATRIX=$FEAT_FOLDER/"reg/example_func2standard.mat"
+    BOLD_IN_MNI=$FEAT_FOLDER/"filtered_func_in_MNI.nii.gz"
+    MASKED_BRAIN_FILE=$FEAT_FOLDER/"filtered_func_in_MNI_masked.nii.gz"
 
     echo "SUBJECT:" $SUBJECT
 
@@ -105,11 +114,24 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     fi
 
     echo "Processing subject at:"
-    echo $SRC_FILE
+    echo $SUBJECT
     echo
 
+    # ===-===-
+    # - FEAT smoothed data ->
 
-    # Part 1 - transform into the MNI space
+
+    # Part 1- AROMA denoising
+    if [[ -d "$AROMA_OUT" ]]; then
+        echo $AROMA_OUT" exists."
+    else
+        echo "Running AROMA..."
+
+        ${PYTHON_PATH}/python ${AROMA_SCRIPT} -feat ${FEAT_FOLDER} -out ${AROMA_OUT}
+    fi
+
+
+    # Part 2 - transform into the MNI space
     if [[ -e $BOLD_IN_MNI ]]; then
         echo $BOLD_IN_MNI " exists."
     else
@@ -119,16 +141,16 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         flirt -ref ${MNI_BRAIN_TEMPLATE} -in ${SRC_FILE} -out ${BOLD_IN_MNI} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
     fi
 
-    # Part 2- apply MNI brain mask
+    # Part 3- apply MNI brain mask
     if [[ -e $MASKED_BRAIN_FILE ]]; then
         echo $MASKED_BRAIN_FILE  " exists."
     else
         # echo $BOLD_IN_MNI " does not exists"
         echo "Running masking..."
-        fslmaths ${BOLD_IN_MNI} ${MNI_BRAIN_MASK} ${MASKED_BRAIN_FILE}
+        fslmaths ${BOLD_IN_MNI} -mul ${MNI_BRAIN_MASK} ${MASKED_BRAIN_FILE}
     fi
 
-    # Part 3- extract regions signal based on AAL2 atlas brain parcellation
+    # Part 4- extract regions signal based on AAL2 atlas brain parcellation
     echo ""
     echo "===-===-"
     echo "Running signal export:"
@@ -142,7 +164,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         if [[ -e $OUTPUT_TEXT_FILE ]]; then
             echo $OUTPUT_TEXT_FILE  " exists."
         else
-            fslmeants -i $MASKED_BRAIN_FILE-o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
+            fslmeants -i $MASKED_BRAIN_FILE -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
         fi
     done
     echo "===-===-"
