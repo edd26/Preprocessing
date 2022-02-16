@@ -110,7 +110,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     else
         echo "Folder does not exist!"
         echo "Creating."
-        mkdir $TIME_SERIES_FOLDER
+        mkdir "$TIME_SERIES_FOLDER"
     fi
 
     echo "Processing subject at:"
