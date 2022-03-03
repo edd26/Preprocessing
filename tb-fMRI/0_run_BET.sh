@@ -3,11 +3,15 @@
 set -e
 
 # DESCRIPTION:
+# Runs brain estraction tool for the selected file under DATA_PATH.
+# Script written for MSC data which hadn multiple sessions.
+# The F_VAL is the threshold for brain extraction
 
 # Input arguments:
 
 
 # TODO:
+# - add parameter to have 4D data processed, not only a single frame (default)
 
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
