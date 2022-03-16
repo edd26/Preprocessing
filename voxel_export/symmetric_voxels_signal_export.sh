@@ -18,19 +18,22 @@ SOURCE_SCAN="${WORKING_DIRECTORY}/filtered_func_in_MNI.nii.gz"
 MASK_FILE="${BRAIN_REGION}_mask.nii.gz"
 OUTPUT_FILE="${WORKING_DIRECTORY}/${SESSION_NAME}_${BRAIN_REGION}_masked.nii"
 VOXEL_SIGNAL_FOLDER="${WORKING_DIRECTORY}/${SESSION_NAME}_${BRAIN_REGION}_voxel_export"
-ASCII_TEMPLATE_NAME="${WORKING_DIRECTORY}/${SESSION_NAME}_${BRAIN_REGION}_"
+ASCII_TEMPLATE_NAME="${BRAIN_REGION}_"
 
-echo "Doing fslmath"
-
+echo "=> >>>"
+echo "=> Doing fslmath"
 fslmaths "${SOURCE_SCAN}" -mul "${MASKS_PATH}/${MASK_FILE}" "${OUTPUT_FILE}"
-echo "fslmath done."
+echo "=> fslmath done."
+echo "=> <<<"
 
 if [[ -e "${VOXEL_SIGNAL_FOLDER}" ]]; then
-    echo "Output folder exists"
+    echo "=> Output folder exists"
 else
     mkdir "${VOXEL_SIGNAL_FOLDER}"
 fi
 
-echo "Doing fsl2ascii"
+echo "=> >>>"
+echo "=> Doing fsl2ascii"
 fsl2ascii "${OUTPUT_FILE}" "${VOXEL_SIGNAL_FOLDER}/${ASCII_TEMPLATE_NAME}"
-echo "fsl2ascii done."
+echo "=> fsl2ascii done."
+echo "=> <<<"
