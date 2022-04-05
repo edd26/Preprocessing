@@ -88,7 +88,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
     FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT
 
     AROMA_OUT=$FEAT_FOLDER/"ICA_AROMA"
-    SRC_FILE=$FEAT_FOLDER/"ICA_AROMA/denoised_func_data_nonaggr"
+    BOLD_IN_SCANNER=$FEAT_FOLDER/"ICA_AROMA/denoised_func_data_nonaggr"
     TIME_SERIES_FOLDER=$FEAT_FOLDER/"time_series_export"
     TRASNSFORMATION_MATRIX=$FEAT_FOLDER/"reg/example_func2standard.mat"
     BOLD_IN_MNI=$FEAT_FOLDER/"filtered_func_in_MNI.nii.gz"
@@ -138,7 +138,7 @@ for i in `seq -f "%03g" 1 $TOTAL_SUBEJCTS`; do
         # echo $BOLD_IN_MNI " does not exists"
         echo "Running flirt..."
 
-        flirt -ref ${MNI_BRAIN_TEMPLATE} -in ${SRC_FILE} -out ${BOLD_IN_MNI} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
+        flirt -ref ${MNI_BRAIN_TEMPLATE} -in ${BOLD_IN_SCANNER} -out ${BOLD_IN_MNI} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
     fi
 
     # Part 3- apply MNI brain mask
