@@ -18,8 +18,6 @@ set -e
 # - "reg/example_func2standard.mat"
 #
 # Input arguments:
-# - DATA_PATH: location of the FEAT folder
-# - TOTAL_SUBEJCTS: total number of subjects for which the analysis will be run;
 # - SUBEJCTS_MIN: starting subject index
 # - SUBEJCTS_MAX: ending subject index
 # - TOTAL_SESSIONS: total_sessions to include in the computations
@@ -40,8 +38,8 @@ set -e
 SUBEJCTS_MIN=$1
 SUBEJCTS_MAX=$2
 TOTAL_SESSIONS=$3
-AROMA_SCRIPT=$4
-# e.g. 001/ICA_AROMA/ICA_AROMA.py
+AROMA_PATH=$4
+# e.g. ICA_AROMA
 
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -56,6 +54,8 @@ TOTAL_RUNS=2
 
 MASKS_FOLDER="./AAl2_masks"
 echo "Masks folder: " $MASKS_FOLDER
+
+AROMA_SCRIPT=$AROMA_PATH/"ICA_AROMA.py"
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # ===-
@@ -88,7 +88,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             PWD_FOLDER=`pwd`
 
             # SUBJECT="$i$NAME_TEMPLATE";
-            DATA_PATH="0${i}"/"sub-MSC${i}"/"ses-func${f}"/"func"
+            DATA_PATH="0${i}"/"ses-func${f}"/"func"
             SUBJECT="sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain";
             FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT".feat"
 
@@ -99,22 +99,24 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             MASKED_BRAIN_FILE=$FEAT_FOLDER/"filtered_func_in_MNI_masked.nii.gz"
             TIME_SERIES_FOLDER=$FEAT_FOLDER/"time_series_export"
 
-            echo "SUBJECT:" $SUBJECT
+            echo "Currently working on SUBJECT:"
+            echo $SUBJECT
+            echo
 
             # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
             # Set up export folder
-            echo
             echo "===-===-===-"
-            echo "Setting up export folder"
+            echo "Setting up time series export folder"
             echo "at "$TIME_SERIES_FOLDER
+            echo
 
 
             if [[ -e $TIME_SERIES_FOLDER ]]; then
-                echo "Folder exists."
+                echo "Folder for time series exists."
                 ls $TIME_SERIES_FOLDER
             else
-                echo "Folder does not exist!"
-                echo "Creating."
+                echo "Folder for time series does not exist."
+                echo "Creating one at ${TIME_SERIES_FOLDER}"
                 mkdir "$TIME_SERIES_FOLDER"
             fi
 
