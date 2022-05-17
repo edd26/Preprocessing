@@ -1,10 +1,8 @@
 #!/bin/bash
-
-set -e
-
 # DESCRIPTION:
 # Export `gz` files to `ni` files in the same location as the first one.
 
+set -e
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # ARGS loading
