@@ -1,4 +1,16 @@
 #!/bin/bash
+ 
+# DESCRIPTION:
+# Script for iterating over subjects, sessions and runs. This can only
+# be run once the feat analysis is done.
+# 
+# ASSUMPTIONS:
+# - the FEAT results are placed in the original MSC nii.gz file location
+# - the name of FEAT result is the same as original file name
+# - atm, it runs only at the motor task
+# - the script have to be run from the root func directory in MSC data file structure
+# 
+# TODO add limiters for subjects and sessions
 
 set -e
 
@@ -10,15 +22,15 @@ BRAIN_REGION=$2
 
 
 # Subjects
-for i in `seq -f "%02g" 1 1`; do
+for i in `seq -f "%02g" 1 3`; do
 
     # Session
     for f in `seq -f "%02g" 1 3`; do
 
-
         # Run
         for r in `seq -f "%02g" 1 2`; do
-            WORKING_DIRECTORY="./0${i}/001_sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
+            # WORKING_DIRECTORY="./0${i}/001_sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
+            WORKING_DIRECTORY="./0${i}/ses-func${f}/func/sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
             SESSION_NAME="MSC${i}_ses${f}_motor_run${r}"
 
             echo "Working in: " $WORKING_DIRECTORY
@@ -32,6 +44,6 @@ for i in `seq -f "%02g" 1 1`; do
             done # s
         done # r
     done # f
-
-    echo "Next i if there is one..."
+    
+    echo "Next subject, if there is one on the list..."
 done # i
