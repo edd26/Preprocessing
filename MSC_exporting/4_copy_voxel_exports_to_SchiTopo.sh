@@ -5,7 +5,7 @@ set -e
 BRAIN_REGION=$1
 
 # Subjects
-for i in `seq -f "%02g" 1 1`; do
+for i in `seq -f "%02g" 2 3`; do
 
     # Session
     for f in `seq -f "%02g" 1 3`; do
@@ -15,7 +15,8 @@ for i in `seq -f "%02g" 1 1`; do
 
             # Side
             for s in "R" "L"; do
-                SRC_FOLDER="./0${i}/0${i}_sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
+                # SRC_FOLDER="./0${i}/0${i}_sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
+                SRC_FOLDER="./0${i}/ses-func${f}/func/sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
                 SUBFOLDER="MSC${i}_ses${f}_motor_run${r}_${BRAIN_REGION}_${s}_voxel_export"
                 TARGET_DIR="${HOME}/Programming/Julia/SchiTopology/data/exp_raw/voxel_data/whole_brain/"
 
