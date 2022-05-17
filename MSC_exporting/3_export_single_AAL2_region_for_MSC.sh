@@ -40,7 +40,7 @@ for i in `seq -f "%02g" 1 3`; do
                 FINAL_BRAIN_REGION="${BRAIN_REGION}_${s}"
                 echo "With region: " $FINAL_BRAIN_REGION
 
-                ./symmetric_voxels_signal_export.sh ${WORKING_DIRECTORY} ${SESSION_NAME} ${MASKS_PATH} ${FINAL_BRAIN_REGION}
+                ./../voxel_export_templates/symmetric_voxels_signal_export.sh ${WORKING_DIRECTORY} ${SESSION_NAME} ${MASKS_PATH} ${FINAL_BRAIN_REGION}
             done # s
         done # r
     done # f
