@@ -45,5 +45,5 @@ for i in `seq -f "%02g" 1 3`; do
         done # r
     done # f
     
-    echo "Next subject, if there is one on the list..."
+    echo 'Next subject, if there is one on the list...'
 done # i
