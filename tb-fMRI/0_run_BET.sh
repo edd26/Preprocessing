@@ -16,7 +16,6 @@ set -e
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Handle input arguments
-# eg. NAME_TEMPLATE="_FEAT_2022-01-05"
 
 DATA_PATH=$1
 
@@ -27,10 +26,6 @@ F_VAL=$3
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # CONSTANTS
 BET_PATH="/usr/local/fsl/bin/bet"
-
-
-# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Run the analysis
@@ -52,20 +47,19 @@ for i in `seq -f "%02g" 1 $TOTAL_SESSIONS`; do
 
         if [[ -e $FULL_IN_FILE ]]; then
             echo "Input file exists!"
-            echo $FULL_IN_FILE
         else
             echo "Input file does not exists!"
-            echo $FULL_IN_FILE
         fi
+        echo $FULL_IN_FILE
 
         if [[ -e $OUT_FILE ]]; then
             echo $OUT_FILE
             echo " file exists. Skipping..."
         else
             echo "Running BET"
-            echo $BET_PATH $IN_FILE $OUT_FILE -f $F_VAL -g 0
+            echo $BET_PATH $IN_FILE $OUT_FILE -F -f $F_VAL -g 0
 
-            $BET_PATH $IN_FILE $OUT_FILE -f $F_VAL -g 0
+            $BET_PATH $IN_FILE $OUT_FILE -F -f $F_VAL -g 0
         fi
         echo
     done
