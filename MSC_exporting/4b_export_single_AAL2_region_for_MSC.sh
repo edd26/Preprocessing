@@ -50,7 +50,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             DATA_PATH="0${i}"/"ses-func${f}"/"func"
             
             # SUBJECT="sub-MSC${i}_ses-func${f}_task-${TASK}_run-${r}_bold_brain"
-            get_file_name $i $f $TASK $r 1
+            get_file_name $i $f $TASK $r
             SUBJECT=$FINAL_NAME
             echo "Currently working on SUBJECT:"
             echo $SUBJECT
