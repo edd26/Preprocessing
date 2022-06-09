@@ -11,15 +11,12 @@ SUBEJCTS_MAX=$2
 TOTAL_SESSIONS=$3
 TOTAL_RUNS=$4
 
-# TASK=$5
-# # e.g. motor
+TASK=$5
+# e.g. motor
 
-# MASKS_FOLDER=$6
-# # e.g. MASKS_FOLDER="./AAl2_masks"
 
-BRAIN_REGION=$5
+BRAIN_REGION=$6
 
-# Subjects
 # Subjects
 for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
     
@@ -32,11 +29,25 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             # Side
             for s in "R" "L"; do
                 # SRC_FOLDER="./0${i}/0${i}_sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
-                SRC_FOLDER="./0${i}/ses-func${f}/func/sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
-                SUBFOLDER="MSC${i}_ses${f}_motor_run${r}_${BRAIN_REGION}_${s}_voxel_export"
-                TARGET_DIR="${HOME}/Programming/Julia/SchiTopology/data/exp_raw/voxel_data/whole_brain/"
+                get_file_name $i $f $TASK $r 0
+                SUBJECT=$FINAL_NAME
                 
-                echo "Copying folder: $SRC_FOLDER/$SUBFOLDER"
+                # SESSION_NAME="MSC${i}_ses${f}_motor_run${r}"
+                get_session_name $i $f $TASK $r
+                SESSION_NAME=$SESSION_FINAL_NAME
+                
+                # SRC_FOLDER="./0${i}/ses-func${f}/func/sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
+                SRC_FOLDER="./0${i}/ses-func${f}/func/${SUBJECT}.feat"
+                SUBFOLDER="${SESSION_NAME}_${BRAIN_REGION}_${s}_voxel_export"
+                
+                echo " "
+                echo "Copying from folder:"
+                echo "SUBJECT: $SUBJECT"
+                echo "Session name $SESSION_NAME"
+                echo "SRC_FOLDER: $SRC_FOLDER"
+                echo "SUBFOLDER: $SUBFOLDER"
+                
+                TARGET_DIR="${HOME}/Programming/Julia/SchiTopology/data/exp_raw/voxel_data/whole_brain/"
                 
                 # mkdir $TARGET_DIR
                 cp -r "$SRC_FOLDER/$SUBFOLDER" $TARGET_DIR
