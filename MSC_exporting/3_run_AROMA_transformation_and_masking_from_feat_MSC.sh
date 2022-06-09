@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -e
 
 # DESCRIPTION:
 # Scripts transforms FEAT processed BOLD fMRI data with the following steps:
@@ -32,16 +31,22 @@ set -e
 # - this should be split into functions, with base being a function doing the steps
 #    and iteration should be done as a wrapper
 
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+set -e
+
+source naming_functions
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Handle input arguments
 SUBEJCTS_MIN=$1
 SUBEJCTS_MAX=$2
 TOTAL_SESSIONS=$3
-AROMA_PATH=$4
+TOTAL_RUNS=$4
+
+AROMA_PATH=$5
 # e.g. ICA_AROMA
 
-TASK=$5
+TASK=$6
 # e.g. motor
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -53,10 +58,6 @@ PYTHON_PATH="/home/ed19aaf/.pyenv/versions/ica-aroma/bin"
 # ===-
 # Global variables set up
 TOTAL_RUNS=2
-
-MASKS_FOLDER="./AAl2_masks"
-echo "Masks folder: " $MASKS_FOLDER
-
 AROMA_SCRIPT=$AROMA_PATH/"ICA_AROMA.py"
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -84,73 +85,62 @@ fi
 echo
 echo "===-===-===-"
 echo "Running main analysis"
+# Subjects
 for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
+    
+    # Sessions
     for f in `seq -f "%02g" 1 $TOTAL_SESSIONS`; do
+        
+        # Runs
+        # TODO ATM it runs multiple times for tasks having only one run; it is for user to track how many runs are there for session
         for r in `seq -f "%02g" 1 $TOTAL_RUNS`; do
+            
             PWD_FOLDER=`pwd`
-
-            # SUBJECT="$i$NAME_TEMPLATE";
+            # Set up variables
             DATA_PATH="0${i}"/"ses-func${f}"/"func"
-            SUBJECT="sub-MSC${i}_ses-func${f}_task-${TASK}_run-${r}_bold_brain";
+            # SUBJECT="sub-MSC${i}_ses-func${f}_task-${TASK}_run-${r}_bold_brain";
+            SUBJECT="$(get_file_name i f TASK r)";
             FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT".feat"
-
+            
             AROMA_OUT=$FEAT_FOLDER/"ICA_AROMA"
             BOLD_IN_SCANNER=$FEAT_FOLDER/"ICA_AROMA/denoised_func_data_nonaggr"
             BOLD_IN_MNI=$FEAT_FOLDER/"filtered_func_in_MNI.nii.gz"
             TRASNSFORMATION_MATRIX=$FEAT_FOLDER/"reg/example_func2standard.mat"
             MASKED_BRAIN_FILE=$FEAT_FOLDER/"filtered_func_in_MNI_masked.nii.gz"
-            TIME_SERIES_FOLDER=$FEAT_FOLDER/"time_series_export"
-
+            
             echo "Currently working on SUBJECT:"
             echo $SUBJECT
             echo
-
-            # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-            # Set up export folder
-            echo "===-===-===-"
-            echo "Setting up time series export folder"
-            echo "at "$TIME_SERIES_FOLDER
-            echo
-
-
-            if [[ -e $TIME_SERIES_FOLDER ]]; then
-                echo "Folder for time series exists."
-                ls $TIME_SERIES_FOLDER
-            else
-                echo "Folder for time series does not exist."
-                echo "Creating one at ${TIME_SERIES_FOLDER}"
-                mkdir "$TIME_SERIES_FOLDER"
-            fi
-
-            echo "Processing subject at:"
-            echo $SUBJECT
-            echo
-
+            
             # ===-===-
-            # - FEAT smoothed data ->
-
-
             # Part 1- AROMA denoising
+            echo "===-===-"
+            echo "Part 1- AROMA denoising."
             if [[ -d "$AROMA_OUT" ]]; then
                 echo $AROMA_OUT" exists."
             else
                 echo "Running AROMA..."
-
+                
                 ${PYTHON_PATH}/python ${AROMA_SCRIPT} -feat ${FEAT_FOLDER} -out ${AROMA_OUT}
             fi
-
-
+            
+            # ===-===-
             # Part 2 - transform into the MNI space
+            echo "===-===-"
+            echo "Part 2 - transform into the MNI space"
             if [[ -e $BOLD_IN_MNI ]]; then
                 echo $BOLD_IN_MNI " exists."
             else
                 # echo $BOLD_IN_MNI " does not exists"
                 echo "Running flirt..."
-
+                
                 flirt -ref ${MNI_BRAIN_TEMPLATE} -in ${BOLD_IN_SCANNER} -out ${BOLD_IN_MNI} -applyxfm -init ${TRASNSFORMATION_MATRIX} -interp trilinear
             fi
-
+            
+            # ===-===-
             # Part 3- apply MNI brain mask
+            echo "===-===-"
+            echo "Part 3- apply MNI brain mask"
             if [[ -e $MASKED_BRAIN_FILE ]]; then
                 echo $MASKED_BRAIN_FILE  " exists."
             else
@@ -158,25 +148,8 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
                 echo "Running masking..."
                 fslmaths ${BOLD_IN_MNI} -mul ${MNI_BRAIN_MASK} ${MASKED_BRAIN_FILE}
             fi
-
-            # Part 4- extract regions signal based on AAL2 atlas brain parcellation
-            echo ""
-            echo "===-===-"
-            echo "Running signal export:"
-            for MASK_FILE in $(ls $MASKS_FOLDER); do
-                OUTPUT_TEXT_FILE=$TIME_SERIES_FOLDER/$(echo $MASK_FILE | sed 's:\.nii\.gz:\_signal.txt:g')
-
-                echo ""
-                echo "===-"
-                echo "Processing mask:" $MASK_FILE
-
-                if [[ -e $OUTPUT_TEXT_FILE ]]; then
-                    echo $OUTPUT_TEXT_FILE  " exists."
-                else
-                    fslmeants -i $MASKED_BRAIN_FILE -o $OUTPUT_TEXT_FILE -m $MASKS_FOLDER/$MASK_FILE
-                fi
-            done
-            echo "===-===-"
+            
+            echo "===-===-===-===-"
             echo
         done # r
     done # f
