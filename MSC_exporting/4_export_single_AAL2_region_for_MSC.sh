@@ -20,6 +20,8 @@ MASKS_PATH=$1
 # BRAIN_REGION="Supp_Motor_Area"
 BRAIN_REGION=$2
 
+TASK=$3
+# e.g."memorywords", "motor"
 
 # Subjects
 for i in `seq -f "%02g" 1 1`; do
@@ -29,8 +31,7 @@ for i in `seq -f "%02g" 1 1`; do
 
         # Run
         for r in `seq -f "%02g" 1 2`; do
-            # WORKING_DIRECTORY="./0${i}/001_sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
-            WORKING_DIRECTORY="./0${i}/ses-func${f}/func/sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain.feat"
+            WORKING_DIRECTORY="./0${i}/ses-func${f}/func/sub-MSC${i}_ses-func${f}_task-${TASK}_run-${r}_bold_brain.feat"
             SESSION_NAME="MSC${i}_ses${f}_motor_run${r}"
 
             echo "Working in: " $WORKING_DIRECTORY $SESSION_NAME
