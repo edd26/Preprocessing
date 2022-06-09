@@ -65,5 +65,5 @@ function get_session_name(){
         NAME="${NAME}_run${r}"
     fi
     
-    SESSION_FINAL_NAME=NAME
+    SESSION_FINAL_NAME=$NAME
 }

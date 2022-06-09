@@ -58,7 +58,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             
             # SESSION_NAME="MSC${i}_ses${f}_motor_run${r}"
             get_session_name $i $f $TASK $r
-            SESSION_NAME=SESSION_FINAL_NAME
+            SESSION_NAME=$SESSION_FINAL_NAME
             
             FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT".feat"
             
