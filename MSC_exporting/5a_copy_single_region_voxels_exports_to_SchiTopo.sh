@@ -2,7 +2,7 @@
 
 set -e
 
-source naming_functions
+source naming_functions.sh
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Handle input arguments
