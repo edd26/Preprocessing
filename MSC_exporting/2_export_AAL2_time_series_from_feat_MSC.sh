@@ -41,6 +41,8 @@ TOTAL_SESSIONS=$3
 AROMA_PATH=$4
 # e.g. ICA_AROMA
 
+TASK=$5
+# e.g. motor
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Report pwd
@@ -89,7 +91,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
 
             # SUBJECT="$i$NAME_TEMPLATE";
             DATA_PATH="0${i}"/"ses-func${f}"/"func"
-            SUBJECT="sub-MSC${i}_ses-func${f}_task-motor_run-${r}_bold_brain";
+            SUBJECT="sub-MSC${i}_ses-func${f}_task-${TASK}_run-${r}_bold_brain";
             FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT".feat"
 
             AROMA_OUT=$FEAT_FOLDER/"ICA_AROMA"
