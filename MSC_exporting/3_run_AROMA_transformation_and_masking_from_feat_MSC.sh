@@ -98,7 +98,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             # Set up variables
             DATA_PATH="0${i}"/"ses-func${f}"/"func"
             # SUBJECT="sub-MSC${i}_ses-func${f}_task-${TASK}_run-${r}_bold_brain";
-            get_file_name $i $f $TASK $r
+            get_file_name $i $f $TASK $r 0
             SUBJECT=$FINAL_NAME
             FEAT_FOLDER=$PWD_FOLDER/$DATA_PATH/$SUBJECT".feat"
             
