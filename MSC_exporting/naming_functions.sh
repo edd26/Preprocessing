@@ -1,7 +1,8 @@
 function get_BET_done(){
     
     # SUBJECT="sub-MSC${i}_ses-func${f}_task-${TASK}_bold"
-    SUBJECT="$(get_file_name i f TASK r 1)";
+    get_file_name $i $f $TASK $r 1
+    SUBJECT=$FINAL_NAME
     IN_FILE=$DATA_PATH/$SUBJECT
     FULL_IN_FILE="${IN_FILE}${EXTENSION}"
     OUT_FILE="${IN_FILE}_brain.nii.gz"
@@ -32,13 +33,12 @@ function get_file_name(){
     BRAIN_NOT_APPEND=$5
     
     NAME="sub-MSC${i}_ses-func${f}_task-${TASK}"
+    echo $NAME
     # Check task, add run if there can be one
     if [[ "${TASK}" == "motor" ]] || [[ "${TASK}" == "glasslexical" ]]; then
         
         NAME="${NAME}_run-${r}"
     fi
-    
-    
     
     if [ -z ${BRAIN_NOT_APPEND+x} ]; then
         # echo "var is unset"
@@ -48,8 +48,6 @@ function get_file_name(){
         FINAL_NAME="${NAME}_bold"
     fi
     
-    
-    return FINAL_NAME
 }
 
 function get_session_name(){

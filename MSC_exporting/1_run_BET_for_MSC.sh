@@ -50,7 +50,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             
             if [[ "${TASK}" == "motor" ]] || [[ "${TASK}" == "glasslexical" ]]; then
                 # Runs
-                for r in `seq -f "%02g" 1 2`; do
+                for r in `seq -f "%02g" 1 ${TOTAL_RUNS}`; do
                     get_BET_done
                 done # r
             else
