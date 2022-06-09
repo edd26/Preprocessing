@@ -31,7 +31,6 @@ function get_file_name(){
     TASK=$3
     r=$4
     BRAIN_NOT_APPEND=$5
-    echo "${BRAIN_NOT_APPEND}" BRAIN_NOT_APPEND
     
     NAME="sub-MSC${i}_ses-func${f}_task-${TASK}"
     echo $NAME
@@ -42,10 +41,10 @@ function get_file_name(){
     fi
     
     if [[ $BRAIN_NOT_APPEND == 0 ]]; then
-        echo "var is unset"
+        # echo "var is unset"
         FINAL_NAME="${NAME}_bold_brain"
     else
-        echo "var is set to '$var'"
+        # echo "var is set to '$var'"
         FINAL_NAME="${NAME}_bold"
     fi
     
