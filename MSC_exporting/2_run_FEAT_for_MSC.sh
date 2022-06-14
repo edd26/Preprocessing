@@ -87,18 +87,18 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
     for f in `seq -f "%02g" 1 $TOTAL_SESSIONS`; do
         DATA_PATH=$PWD_FOLDER/"0${i}"/"ses-func${f}"/"func"
         
-        for TASK in "glasslexical" "memoryfaces" "memoryscenes" "memorywords" "motor"; do
-            
-            if [[ "${TASK}" == "motor" ]] || [[ "${TASK}" == "glasslexical" ]]; then
-                LOCAL_TOTAL_RUNS=$TOTAL_RUNS
-            else
-                LOCAL_TOTAL_RUNS=1
-            fi # tasks
-            
-            for r in `seq -f "%02g" 1 ${LOCAL_TOTAL_RUNS}`; do
-                get_FEAT_done
-            done # r
-        done # TASK
+        # for TASK in "glasslexical" "memoryfaces" "memoryscenes" "memorywords" "motor"; do
+        
+        if [[ "${TASK}" == "motor" ]] || [[ "${TASK}" == "glasslexical" ]]; then
+            LOCAL_TOTAL_RUNS=$TOTAL_RUNS
+        else
+            LOCAL_TOTAL_RUNS=1
+        fi # tasks
+        
+        for r in `seq -f "%02g" 1 ${LOCAL_TOTAL_RUNS}`; do
+            get_FEAT_done
+        done # r
+        # done # TASK
         
     done # f
 done # i
