@@ -27,11 +27,11 @@ TOTAL_RUNS=$4
 F_VAL=$5
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-# CONSTANTS
+# Set up CONSTANTS
 BET_PATH="/usr/local/fsl/bin/bet"
 EXTENSION=".nii"
 
-PWD=`pwd`
+PWD_FOLDER=`pwd`
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Run the analysis
@@ -42,14 +42,14 @@ echo "Running BET"
 echo
 # Subjects
 for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
-
+    
     # Sessions
     for f in `seq -f "%02g" 1 $TOTAL_SESSIONS`; do
-
-        DATA_PATH=$PWD/"0${i}"/"ses-func${f}"/"func"
-
+        
+        DATA_PATH=$PWD_FOLDER/"0${i}"/"ses-func${f}"/"func"
+        
         for TASK in "glasslexical" "memoryfaces" "memoryscenes" "memorywords" "motor"; do
-
+            
             if [[ "${TASK}" == "motor" ]] || [[ "${TASK}" == "glasslexical" ]]; then
                 # Runs
                 for r in `seq -f "%02g" 1 ${TOTAL_RUNS}`; do
@@ -59,7 +59,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
                 r=1
                 get_BET_done
             fi # tasks
-
+            
         done # TASK
     done # f
 done # i
@@ -70,6 +70,4 @@ echo "===-===-===-===-"
 # ===-
 echo "Finished processing subjects."
 echo "Please inspect results."
-
-
 
