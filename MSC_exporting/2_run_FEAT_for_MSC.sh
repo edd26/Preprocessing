@@ -52,7 +52,7 @@ function get_FEAT_done(){  # ===-===-
         FUNCTIONAL_FILE="${PWD_FOLDER}/${FUNC_PATH}/${SUBJECT}"
         STRUCTURAL_FILE="${PWD_FOLDER}/${STRUCT_PATH}/sub-MSC${i}_ses-struct01_run-01_T1w_brain"
         
-        echo "Fjnctional file" $FUNCTIONAL_FILE
+        echo "Functional file" $FUNCTIONAL_FILE
         echo "Structural file" $STRUCTURAL_FILE
         
         # RUN FEAT
