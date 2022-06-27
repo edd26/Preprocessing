@@ -66,6 +66,7 @@ for i in `seq -f "%02g" $SUBEJCTS_MIN $SUBEJCTS_MAX`; do
             
             # Side
             for s in "L" "R"; do
+                # TODO check for folder existance to speed up computations
                 FINAL_BRAIN_REGION="${BRAIN_REGION}_${s}"
                 echo "With region: " $FINAL_BRAIN_REGION
                 
